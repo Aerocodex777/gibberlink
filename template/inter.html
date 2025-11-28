@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gibberlink AI Communication Protocol</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d1b69 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #00ff88, #00aaff);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #00ff88, #00aaff, #ff0099);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .main-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section, .output-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-section::before, .output-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #00ff88;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .text-input {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .text-input::placeholder {
+            color: #666;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00ff88, #00aaff);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .frequency-display {
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .frequency-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .freq-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: #00ff88;
+        }
+
+        .protocol-info {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .protocol-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .transmission-log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            font-family: 'Monaco', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .log-info {
+            color: #00aaff;
+            background: rgba(0, 170, 255, 0.1);
+        }
+
+        .log-success {
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .log-data {
+            color: #ff9900;
+            background: rgba(255, 153, 0, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .waveform {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(to top, rgba(0, 255, 136, 0.1), transparent);
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.2); }
+        }
+
+        @media (max-width: 768px) {
+            .main-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .protocol-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: float 10s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="title">GIBBERLINK PROTOCOL</h1>
+            <p class="subtitle">AI-to-AI Communication Interface</p>
+            <div class="status">🔊 PROTOCOL ACTIVE</div>
+        </div>
+
+        <div class="main-panel">
+            <div class="input-section">
+                <h3 class="section-title">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    Input Terminal
+                </h3>
+                <textarea 
+                    class="text-input" 
+                    id="textInput" 
+                    placeholder="Enter message for AI transmission...&#10;&#10;Examples:&#10;• Hello, processing complete&#10;• Data transfer initiated&#10;• Neural network synchronized"
+                ></textarea>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="encodeMessage()">
+                        🚀 ENCODE TO GIBBERLINK
+                    </button>
+                    <button class="btn btn-secondary" onclick="playAudio()">
+                        🔊 PLAY AUDIO
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAll()">
+                        🗑️ CLEAR
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h3 class="section-title">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    Frequency Analysis
+                </h3>
+                <div class="frequency-display">
+                    <canvas class="frequency-canvas" id="frequencyCanvas"></canvas>
+                    <div class="freq-info" id="freqInfo">
+                        Ready for transmission
+                    </div>
+                    <div class="waveform"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="protocol-info">
+            <h3 class="section-title">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                </svg>
+                Protocol Statistics
+            </h3>
+            <div class="protocol-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="efficiency">0%</div>
+                    <div class="stat-label">Efficiency Gain</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="speed">0ms</div>
+                    <div class="stat-label">Transmission Time</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="frequency">0Hz</div>
+                    <div class="stat-label">Current Frequency</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="packets">0</div>
+                    <div class="stat-label">Data Packets</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="transmission-log" id="transmissionLog">
+            <div class="log-entry log-info">[GIBBERLINK] Protocol initialized</div>
+            <div class="log-entry log-success">[SYSTEM] Ready for AI communication</div>
+            <div class="log-entry log-data">[INFO] Awaiting input data...</div>
+        </div>
+    </div>
+
+    <script>
+        // Gibberlink Protocol Implementation
+        class GibberlinkProtocol {
+            constructor() {
+                this.canvas = document.getElementById('frequencyCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.audioContext = null;
+                this.isPlaying = false;
+                this.currentFrequencies = [];
+                this.animationId = null;
+                
+                this.setupCanvas();
+                this.initializeAudio();
+                this.createParticles();
+                
+                // Frequency mapping for 4-bit encoding
+                this.freqMap = {
+                    '0000': 800,  '0001': 900,  '0010': 1000, '0011': 1100,
+                    '0100': 1200, '0101': 1300, '0110': 1400, '0111': 1500,
+                    '1000': 1600, '1001': 1700, '1010': 1800, '1011': 1900,
+                    '1100': 2000, '1101': 2100, '1110': 2200, '1111': 2300
+                };
+            }
+
+            setupCanvas() {
+                const resizeCanvas = () => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.canvas.width = rect.width * window.devicePixelRatio;
+                    this.canvas.height = rect.height * window.devicePixelRatio;
+                    this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                    this.canvas.style.width = rect.width + 'px';
+                    this.canvas.style.height = rect.height + 'px';
+                };
+                
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                this.drawFrequencyDisplay();
+            }
+
+            async initializeAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Audio context not supported');
+                }
+            }
+
+            createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 10 + 's';
+                    particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+
+            textToBinary(text) {
+                return text.split('').map(char => 
+                    char.charCodeAt(0).toString(2).padStart(8, '0')
+                ).join('');
+            }
+
+            encodeToGibberlink(text) {
+                this.log(`[GIBBERLINK] Encoding: "${text}"`, 'info');
+                this.log('[PROTOCOL] Switching to sound-based transmission', 'info');
+                
+                const binary = this.textToBinary(text);
+                const header = '10101010'; // Sync pattern
+                const fullBinary = header + binary;
+                
+                // Pad to make divisible by 4
+                const paddedBinary = fullBinary.padEnd(Math.ceil(fullBinary.length / 4) * 4, '0');
+                
+                this.log(`[DATA] Binary length: ${paddedBinary.length} bits`, 'data');
+                
+                const frequencies = [];
+                for (let i = 0; i < paddedBinary.length; i += 4) {
+                    const chunk = paddedBinary.substr(i, 4);
+                    if (this.freqMap[chunk]) {
+                        frequencies.push(this.freqMap[chunk]);
+                    }
+                }
+                
+                this.currentFrequencies = frequencies;
+                this.updateStats(text.length, frequencies);
+                this.visualizeFrequencies(frequencies);
+                
+                this.log(`[SUCCESS] Generated ${frequencies.length} frequency packets`, 'success');
+                this.log(`[TRANSMISSION] Ready for audio playback`, 'success');
+                
+                return frequencies;
+            }
+
+            visualizeFrequencies(frequencies) {
+                if (!frequencies.length) return;
+                
+                const width = this.canvas.width / window.devicePixelRatio;
+                const height = this.canvas.height / window.devicePixelRatio;
+                
+                this.ctx.clearRect(0, 0, width, height);
+                
+                // Draw grid
+                this.ctx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+                this.ctx.lineWidth = 1;
+                
+                for (let i = 0; i < 10; i++) {
+                    const y = (height / 10) * i;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(width, y);
+                    this.ctx.stroke();
+                }
+                
+                // Draw frequency bars
+                const barWidth = width / frequencies.length;
+                const maxFreq = Math.max(...frequencies);
+                const minFreq = Math.min(...frequencies);
+                
+                frequencies.forEach((freq, index) => {
+                    const barHeight = ((freq - minFreq) / (maxFreq - minFreq)) * (height - 20);
+                    const x = index * barWidth;
+                    const y = height - barHeight - 10;
+                    
+                    // Create gradient for each bar
+                    const gradient = this.ctx.createLinearGradient(0, y, 0, y + barHeight);
+                    if (freq >= 1600) {
+                        gradient.addColorStop(0, '#00ff88');
+                        gradient.addColorStop(1, '#00aa44');
+                    } else {
+                        gradient.addColorStop(0, '#00aaff');
+                        gradient.addColorStop(1, '#0066aa');
+                    }
+                    
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fillRect(x + 2, y, barWidth - 4, barHeight);
+                    
+                    // Add glow effect
+                    this.ctx.shadowColor = freq >= 1600 ? '#00ff88' : '#00aaff';
+                    this.ctx.shadowBlur = 10;
+                    this.ctx.fillRect(x + 2, y, barWidth - 4, barHeight);
+                    this.ctx.shadowBlur = 0;
+                });
+                
+                // Update frequency info
+                document.getElementById('freqInfo').textContent = 
+                    `Range: ${minFreq}Hz - ${maxFreq}Hz | Packets: ${frequencies.length}`;
+            }
+
+            drawFrequencyDisplay() {
+                const width = this.canvas.width / window.devicePixelRatio;
+                const height = this.canvas.height / window.devicePixelRatio;
+                
+                this.ctx.clearRect(0, 0, width, height);
+                
+                // Draw idle state
+                this.ctx.strokeStyle = 'rgba(0, 255, 136, 0.3)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, height / 2);
+                
+                for (let x = 0; x < width; x += 5) {
+                    const y = height / 2 + Math.sin(x * 0.02) * 20;
+                    this.ctx.lineTo(x, y);
+                }
+                this.ctx.stroke();
+                
+                // Add center line
+                this.ctx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, height / 2);
+                this.ctx.lineTo(width, height / 2);
+                this.ctx.stroke();
+            }
+
+            updateStats(textLength, frequencies) {
+                // Calculate efficiency (simulated)
+                const efficiency = Math.min(95, 60 + (textLength * 2));
+                document.getElementById('efficiency').textContent = efficiency + '%';
+                
+                // Calculate transmission time
+                const transmissionTime = frequencies.length * 10; // 10ms per frequency
+                document.getElementById('speed').textContent = transmissionTime + 'ms';
+                
+                // Current frequency (average)
+                const avgFreq = frequencies.reduce((a, b) => a + b, 0) / frequencies.length;
+                document.getElementById('frequency').textContent = Math.round(avgFreq) + 'Hz';
+                
+                // Packet count
+                document.getElementById('packets').textContent = frequencies.length;
+            }
+
+            async playGibberlinkAudio(frequencies) {
+                if (!this.audioContext || !frequencies.length) return;
+                
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+                
+                this.isPlaying = true;
+                this.log('[AUDIO] Starting transmission...', 'info');
+                
+                let currentTime = this.audioContext.currentTime;
+                
+                frequencies.forEach((freq, index) => {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(freq, currentTime);
+                    oscillator.type = freq >= 1600 ? 'sine' : 'square';
+                    
+                    gainNode.gain.setValueAtTime(0, currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.1, currentTime + 0.005);
+                    gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.015);
+                    
+                    oscillator.start(currentTime);
+                    oscillator.stop(currentTime + 0.02);
+                    
+                    currentTime += 0.02;
+                });
+                
+                setTimeout(() => {
+                    this.isPlaying = false;
+                    this.log('[AUDIO] Transmission complete', 'success');
+                }, frequencies.length * 20);
+            }
+
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('transmissionLog');
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${type}`;
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Keep only last 20 entries
+                while (logContainer.children.length > 20) {
+                    logContainer.removeChild(logContainer.firstChild);
+                }
+            }
+        }
+
+        // Initialize protocol
+        const protocol = new GibberlinkProtocol();
+
+        // UI Functions
+        function encodeMessage() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                protocol.log('[ERROR] No input text provided', 'info');
+                return;
+            }
+            
+            protocol.encodeToGibberlink(text);
+        }
+
+        function playAudio() {
+            if (protocol.currentFrequencies.length === 0) {
+                protocol.log('[ERROR] No encoded data to play', 'info');
+                return;
+            }
+            
+            protocol.playGibberlinkAudio(protocol.currentFrequencies);
+        }
+
+        function clearAll() {
+            document.getElementById('textInput').value = '';
+            protocol.currentFrequencies = [];
+            protocol.drawFrequencyDisplay();
+            document.getElementById('freqInfo').textContent = 'Ready for transmission';
+            
+            // Reset stats
+            document.getElementById('efficiency').textContent = '0%';
+            document.getElementById('speed').textContent = '0ms';
+            document.getElementById('frequency').textContent = '0Hz';
+            document.getElementById('packets').textContent = '0';
+            
+            protocol.log('[SYSTEM] Interface cleared', 'info');
+        }
+
+        // Demo messages
+        const demoMessages = [
+            "Neural network synchronized",
+            "Data processing complete",
+            "AI communication established",
+            "Machine learning parameters updated",
+            "Quantum entanglement detected"
+        ];
+
+        // Auto-demo every 30 seconds
+        setInterval(() => {
+            const input = document.getElementById('textInput');
+            if (!input.value.trim()) {
+                const demoMessage = demoMessages[Math.floor(Math.random() * demoMessages.length)];
+                input.value = demoMessage;
+                protocol.log(`[DEMO] Auto-generated: "${demoMessage}"`, 'data');
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

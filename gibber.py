@@ -1,0 +1,1 @@
+ii "c:\Users\Sreehari K\gibberlink\template\inter.html"

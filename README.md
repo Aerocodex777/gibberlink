@@ -1,11 +1,9 @@
 # GibberLink 🔗
 
-A modern web application for creating, managing, and sharing shortened URLs with analytics. Built with Python backend and responsive web interface, GibberLink makes URL shortening simple and powerful.
+A modern web application for creating gibberlink messages. Built with Python backend and responsive web interface.
 
 ## 🌟 Features
 
-- **⚡ Quick URL Shortening** - Convert long URLs into short, memorable links instantly
-- **📊 Link Analytics** - Track clicks, referrers, and user data for each shortened link
 - **🎨 Custom Aliases** - Create custom short codes for your links
 - **📱 Responsive Design** - Works seamlessly on desktop, tablet, and mobile devices
 - **🔒 Link Management** - Edit, delete, and manage your shortened links
